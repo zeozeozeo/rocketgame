@@ -3,13 +3,11 @@ package game
 import (
 	"embed"
 	"fmt"
-	"image"
 	"image/color"
 	_ "image/png"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 //go:embed levels/*
@@ -23,8 +21,13 @@ const (
 )
 
 type Level struct {
-	grid [][]Block
-	cam  *Camera
+	grid       [][]Block
+	levelImage *ebiten.Image // base level image, doesn't change
+	mapImage   *ebiten.Image // map image, rendered every frame
+	cam        *Camera       // camera
+	time       float64       // time spent in level, in seconds
+	spawnPos   Vec2i         // player spawn position
+	player     *Player       // player
 }
 
 func (level *Level) Set(x, y int, block Block) {
@@ -45,7 +48,7 @@ func LoadLevel(num int) (*Level, error) {
 	}
 
 	// decode image
-	img, _, err := image.Decode(f)
+	img, err := LoadRGBAImage(f)
 	f.Close()
 	if err != nil {
 		return nil, err
@@ -60,38 +63,56 @@ func LoadLevel(num int) (*Level, error) {
 	for x := 0; x < img.Bounds().Dx(); x++ {
 		for y := 0; y < img.Bounds().Dy(); y++ {
 			r, g, b, _ := img.At(x, y).RGBA()
-			// 0,0,0 = solid
+			// 0-65535 => 0-255
+			r >>= 8
+			g >>= 8
+			b >>= 8
+			clearPixel := false
+
+			// black = solid
+			// blue = spawn position
+
 			if r == 0 && g == 0 && b == 0 {
 				level.Set(x, y, BLOCK_SOLID)
+			}
+			if r == 0 && g == 0 && b == 255 {
+				fmt.Println("found spawn position at", x, y)
+				level.spawnPos = Vec2i{x, y}
+				clearPixel = true
+			}
+
+			if clearPixel {
+				img.Set(x, y, color.RGBA{255, 255, 255, 255})
 			}
 		}
 	}
 
-	// create camera
+	// create camera, level and player
 	level.cam = NewCamera()
+	level.levelImage = ebiten.NewImageFromImage(img)
+	level.mapImage = ebiten.NewImage(img.Bounds().Dx(), img.Bounds().Dy())
+	level.player = NewPlayer()
 
 	fmt.Printf("loaded level %d in %s\n", num, time.Since(start))
 	return level, nil
 }
 
-func (level *Level) Update() {
-
+func (level *Level) Update(dt float64) {
+	level.time += dt
+	level.player.Update(dt, level.cam)
+	level.cam.Zoom = 5.0
 }
 
-func (level *Level) drawBlock(screen *ebiten.Image, x, y int) {
-	block := level.At(x, y)
-	rx := float32(x)
-	ry := float32(y)
-	switch block {
-	case BLOCK_SOLID:
-		vector.DrawFilledRect(screen, rx, ry, 1, 1, color.RGBA{255, 255, 255, 255}, false)
-	}
+func (level *Level) drawMap() {
+	level.mapImage.DrawImage(level.levelImage, &ebiten.DrawImageOptions{})
+	level.player.Draw(level.mapImage, level.cam)
+}
+
+func (level *Level) drawMapToScreen(screen *ebiten.Image) {
+	screen.DrawImage(level.mapImage, level.cam.GetImageOp())
 }
 
 func (level *Level) Draw(screen *ebiten.Image) {
-	for y := 0; y < len(level.grid); y++ {
-		for x := 0; x < len(level.grid[y]); x++ {
-			level.drawBlock(screen, x, y)
-		}
-	}
+	level.drawMap()
+	level.drawMapToScreen(screen)
 }
