@@ -12,14 +12,22 @@ var rocketIdle = LoadEbitenImage(assets.RocketIdle)
 var rocketFire = LoadEbitenImage(assets.RocketFire)
 var playerSize = Vec2i{X: rocketIdle.Bounds().Dx(), Y: rocketIdle.Bounds().Dy()}
 
+const (
+	TURN_RATE = math.Pi / 8 // max radians per second
+)
+
 type Player struct {
-	pos       Vec2
-	angle     float64
-	aliveTime float64
+	pos         Vec2
+	angle       float64
+	targetAngle float64
+	aliveTime   float64
+	vel         Vec2 // player velocity
 }
 
-func NewPlayer() *Player {
-	return &Player{pos: Vec2{X: 100, Y: 100}}
+func NewPlayer(spawnPos Vec2i) *Player {
+	return &Player{
+		pos: Vec2{X: float64(spawnPos.X), Y: float64(spawnPos.Y)},
+	}
 }
 
 func (player *Player) Update(dt float64, cam *Camera) {
@@ -28,10 +36,20 @@ func (player *Player) Update(dt float64, cam *Camera) {
 		return // don't process input while respawning
 	}
 
+	player.vel.X += 0.005
+	player.vel.Y += 0.005
+	player.vel = player.vel.ClampMax(0.4)
+
 	// rotate player towards mouse
+
 	mx, my := ebiten.CursorPosition()
 	wmx, wmy := cam.ScreenToWorld(float64(mx), float64(my))
-	player.angle = math.Atan2(float64(wmy)-player.pos.Y, float64(wmx)-player.pos.X) + math.Pi/2
+	player.targetAngle = math.Atan2(float64(wmy)-player.pos.Y, float64(wmx)-player.pos.X) + math.Pi/2
+
+	player.angle = LerpAngle(player.angle, player.targetAngle, 0.02)
+
+	player.pos.X += math.Sin(player.angle) * player.vel.X
+	player.pos.Y -= math.Cos(player.angle) * player.vel.Y
 }
 
 func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
@@ -42,6 +60,10 @@ func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
 
 	// make the player flicker when respawning
 	if !(player.aliveTime < 0.6 && math.Mod(player.aliveTime, 0.1) < 0.05) {
-		screen.DrawImage(rocketIdle, op)
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			screen.DrawImage(rocketFire, op)
+		} else {
+			screen.DrawImage(rocketIdle, op)
+		}
 	}
 }

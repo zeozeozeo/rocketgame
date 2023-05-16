@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	_ "image/png"
 	"io"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -29,4 +30,31 @@ func LoadEbitenImage(data []byte) *ebiten.Image {
 		panic(err)
 	}
 	return ebiten.NewImageFromImage(img)
+}
+
+func Lerp(a, b, t float64) float64 {
+	return a*(1.0-t) + (b * t)
+}
+
+func fposmod(a, b float64) float64 {
+	if a >= 0 {
+		return math.Mod(a, b)
+	}
+	return b - math.Mod(-a, b)
+}
+
+func normalizeAngle(x float64) float64 {
+	return fposmod(x+math.Pi, 2.0*math.Pi) - math.Pi
+}
+
+func LerpAngle(a, b, t float64) float64 {
+	
+	if math.Abs(a-b) >= math.Pi {
+		if a > b {
+			a = normalizeAngle(a) - 2.0*math.Pi
+		} else {
+			b = normalizeAngle(b) - 2.0*math.Pi
+		}
+	}
+	return Lerp(a, b, t)
 }

@@ -91,7 +91,7 @@ func LoadLevel(num int) (*Level, error) {
 	level.cam = NewCamera()
 	level.levelImage = ebiten.NewImageFromImage(img)
 	level.mapImage = ebiten.NewImage(img.Bounds().Dx(), img.Bounds().Dy())
-	level.player = NewPlayer()
+	level.player = NewPlayer(level.spawnPos)
 
 	fmt.Printf("loaded level %d in %s\n", num, time.Since(start))
 	return level, nil
