@@ -13,16 +13,16 @@ const WIDTH, HEIGHT = 1280, 720
 const TPS = 144
 
 type Game struct {
-	currentLevel *game.Level
+	level *game.Level
 }
 
 func (g *Game) Update() error {
-	g.currentLevel.Update(1.0 / TPS)
+	g.level.Update(1.0 / TPS)
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.currentLevel.Draw(screen)
+	g.level.Draw(screen)
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("fps: %f\ntps: %f", ebiten.ActualFPS(), ebiten.ActualTPS()))
 }
 
@@ -36,11 +36,7 @@ func main() {
 	ebiten.SetWindowTitle("rocketgame")
 
 	g := &Game{}
-	level, err := game.LoadLevel(1)
-	if err != nil {
-		panic(err)
-	}
-	g.currentLevel = level
+	g.level = game.NewLevel()
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

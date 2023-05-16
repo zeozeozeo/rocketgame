@@ -7,6 +7,7 @@ import (
 	_ "image/png"
 	"io"
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -37,11 +38,34 @@ func Lerp(a, b, t float64) float64 {
 }
 
 func shortAngleDist(a float64, b float64) float64 {
-	var turn = math.Pi * 2
-	var deltaAngle = math.Mod(b-a, turn)
+	turn := math.Pi * 2
+	deltaAngle := math.Mod(b-a, turn)
 	return math.Mod(2*deltaAngle, turn) - deltaAngle
 }
 
 func LerpAngle(a, b, t float64) float64 {
 	return a + shortAngleDist(a, b)*t
+}
+
+func RotateTowards(from, to Vec2) float64 {
+	return math.Atan2(float64(to.Y)-from.Y, float64(to.X)-from.X) + math.Pi/2
+}
+
+func MoveTowards(pos *Vec2, angle float64, vel Vec2) {
+	pos.X += math.Sin(angle) * vel.X
+	pos.Y -= math.Cos(angle) * vel.Y
+}
+
+func RandFloat64(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
+func ClampFloat64(v, min, max float64) float64 {
+	if v < min {
+		return min
+	}
+	if v > max {
+		return max
+	}
+	return v
 }

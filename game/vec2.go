@@ -14,9 +14,9 @@ func (v Vec2) ClampMax(max float64) Vec2 {
 	return v
 }
 
-// func (v1 Vec2) Sub(v2 Vec2) Vec2 {
-// 	  return Vec2{v1.X - v2.X, v1.Y - v2.Y}
-// }
+func (v1 Vec2) Add(v2 Vec2) Vec2 {
+	return Vec2{v1.X + v2.X, v1.Y + v2.Y}
+}
 
 type Vec2i struct {
 	X, Y int
