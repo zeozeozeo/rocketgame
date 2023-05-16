@@ -27,12 +27,12 @@ func (cam *Camera) ZoomTo(zoom float64) {
 }
 
 func (cam *Camera) ScreenToWorld(x, y float64) (float64, float64) {
-	return x/cam.Zoom - cam.X, y/cam.Zoom - cam.Y
+	return x/cam.Zoom + cam.X/2, y/cam.Zoom + cam.Y/2
 }
 
 func (cam *Camera) GetImageOp() *ebiten.DrawImageOptions {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(-cam.X, -cam.Y)
+	op.GeoM.Translate(-cam.X/2, -cam.Y/2)
 	op.GeoM.Scale(cam.Zoom, cam.Zoom)
 	return op
 }

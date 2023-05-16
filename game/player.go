@@ -50,6 +50,7 @@ func (player *Player) Update(dt float64, cam *Camera) {
 
 	player.pos.X += math.Sin(player.angle) * player.vel.X
 	player.pos.Y -= math.Cos(player.angle) * player.vel.Y
+	cam.MoveTo(player.pos.X, player.pos.Y)
 }
 
 func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
