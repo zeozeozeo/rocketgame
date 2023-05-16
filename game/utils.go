@@ -36,25 +36,12 @@ func Lerp(a, b, t float64) float64 {
 	return a*(1.0-t) + (b * t)
 }
 
-func fposmod(a, b float64) float64 {
-	if a >= 0 {
-		return math.Mod(a, b)
-	}
-	return b - math.Mod(-a, b)
-}
-
-func normalizeAngle(x float64) float64 {
-	return fposmod(x+math.Pi, 2.0*math.Pi) - math.Pi
+func shortAngleDist(a float64, b float64) float64 {
+	var turn = math.Pi * 2
+	var deltaAngle = math.Mod(b-a, turn)
+	return math.Mod(2*deltaAngle, turn) - deltaAngle
 }
 
 func LerpAngle(a, b, t float64) float64 {
-	
-	if math.Abs(a-b) >= math.Pi {
-		if a > b {
-			a = normalizeAngle(a) - 2.0*math.Pi
-		} else {
-			b = normalizeAngle(b) - 2.0*math.Pi
-		}
-	}
-	return Lerp(a, b, t)
+	return a + shortAngleDist(a, b)*t
 }

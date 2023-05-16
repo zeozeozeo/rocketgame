@@ -38,7 +38,7 @@ func (player *Player) Update(dt float64, cam *Camera) {
 
 	player.vel.X += 0.005
 	player.vel.Y += 0.005
-	player.vel = player.vel.ClampMax(0.4)
+	player.vel = player.vel.ClampMax(0.6)
 
 	// rotate player towards mouse
 
