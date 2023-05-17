@@ -26,6 +26,12 @@ var RocketFire []byte
 //go:embed FutilePro.ttf
 var futileProFont []byte
 
+//go:embed particle.png
+var Particle []byte
+
+//go:embed cloud.png
+var Cloud []byte
+
 var FontLoaded bool
 var FutilePro font.Face
 

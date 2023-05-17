@@ -73,6 +73,10 @@ func ClampFloat64(v, min, max float64) float64 {
 	return v
 }
 
+func Normalize(value, max, min float64) float64 {
+	return (value - min) / (max - min)
+}
+
 func DrawText(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
 	if !assets.FontLoaded {
 		assets.LoadFont()
@@ -91,4 +95,19 @@ func MeasureText(str string) (int, int) {
 func DrawTextShadow(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
 	DrawText(screen, str, x+2, y+2, color.RGBA{0, 0, 0, 255})
 	DrawText(screen, str, x, y, clr)
+}
+
+var fireColors = []color.RGBA{
+	{255, 242, 0, 255},
+	{252, 182, 6, 255},
+	{236, 28, 36, 255},
+	{236, 194, 14, 255},
+	{255, 230, 0, 255},
+	{255, 214, 0, 255},
+	{255, 198, 0, 255},
+	{255, 178, 0, 255},
+}
+
+func RandomFireColor() color.RGBA {
+	return fireColors[rand.Intn(len(fireColors))]
 }

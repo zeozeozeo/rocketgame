@@ -1,5 +1,7 @@
 package game
 
+import "golang.org/x/exp/rand"
+
 type Vec2 struct {
 	X, Y float64
 }
@@ -28,4 +30,34 @@ type Rect struct {
 
 func (r1 Rect) Overlaps(r2 Rect) bool {
 	return r1.X < r2.X+r2.W && r1.X+r1.W > r2.X && r1.Y < r2.Y+r2.H && r1.Y+r1.H > r2.Y
+}
+
+func (r Rect) SpawnRandomSide(w, h float64) Vec2 {
+	v := rand.Intn(6)
+	//      1
+	// 0 =-----= 2
+	//   -     -
+	// 3 =-----= 5
+	//      4
+	switch v {
+	case 0:
+		return Vec2{r.X - w, r.Y - h}
+	case 1:
+		return Vec2{(r.X + r.W/2) - w/2, r.Y - h}
+	case 2:
+		return Vec2{r.X + r.W + w, r.Y - h}
+	case 3:
+		return Vec2{r.X - w, r.Y + r.H + h}
+	case 4:
+		return Vec2{(r.X + r.W/2) - w/2, r.Y + r.H + h}
+	case 5:
+		return Vec2{r.X + r.W + w, r.Y + r.H + h}
+	default:
+		return Vec2{}
+	}
+}
+
+type Line struct {
+	Start Vec2
+	End   Vec2
 }

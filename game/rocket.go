@@ -24,19 +24,21 @@ type Rocket struct {
 	deathAnimProgress float64
 	IsDead            bool
 	didEnterBounds    bool
+	lastParticleTime  float64
 }
 
-func NewRocket(x, y float64) *Rocket {
+func NewRocket(cam *Camera) *Rocket {
+	bounds := cam.GetBounds()
 	return &Rocket{
 		playerOffset: Vec2{
 			RandFloat64(-MAX_OFFSET, MAX_OFFSET),
 			RandFloat64(-MAX_OFFSET, MAX_OFFSET),
 		},
-		pos: Vec2{x, y},
+		pos: bounds.SpawnRandomSide(float64(rocketSize.X), float64(rocketSize.Y)),
 	}
 }
 
-func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect) {
+func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect, pm *ParticleManager) {
 	r.aliveTime += dt
 	if r.aliveTime > DEATH_ANIM_START {
 		r.deathAnimProgress = Lerp(DEATH_ANIM_START, DEATH_TIME, r.deathAnimProgress)
@@ -51,8 +53,8 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect) {
 	MoveTowards(&r.pos, r.angle, r.vel)
 
 	// check for collisions
-	bounds.W += float64(rocketSize.X)
-	bounds.H += float64(rocketSize.Y)
+	bounds.W += float64(rocketSize.X) * cam.Zoom
+	bounds.H += float64(rocketSize.Y) * cam.Zoom
 	rocketRect := r.GetRect()
 	overlaps := bounds.Overlaps(rocketRect)
 
@@ -65,6 +67,23 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect) {
 	if rocketRect.Overlaps(player.GetRect()) {
 		player.Die()
 	}
+
+	// spawn particles
+	if r.IsActive() && r.aliveTime-r.lastParticleTime > 0.01 {
+		const maxVel = 0.05
+		for i := 0; i < 2; i++ {
+			pm.Spawn(
+				r.pos.Add(Vec2{RandFloat64(-1.0, 1.0), RandFloat64(-1.0, 1.0)}),
+				Vec2{RandFloat64(0.3, 0.6), RandFloat64(0.3, 0.6)},
+				Vec2{RandFloat64(-maxVel, maxVel), RandFloat64(-maxVel, maxVel)},
+				0.1,
+				RandomFireColor(),
+				RandFloat64(0.1, 0.5),
+			)
+		}
+		r.lastParticleTime = r.aliveTime
+	}
+
 }
 
 func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
@@ -74,7 +93,7 @@ func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
 	op.GeoM.Translate(r.pos.X, r.pos.Y)
 	cam.ApplyOP(op)
 
-	if r.vel.X < MAX_VEL || r.vel.Y < MAX_VEL {
+	if r.IsActive() {
 		screen.DrawImage(rocketFire, op)
 	} else {
 		screen.DrawImage(rocketIdle, op)
@@ -83,4 +102,8 @@ func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
 
 func (r *Rocket) GetRect() Rect {
 	return Rect{r.pos.X, r.pos.Y, float64(rocketSize.X), float64(rocketSize.Y)}
+}
+
+func (r *Rocket) IsActive() bool {
+	return r.vel.X < MAX_VEL || r.vel.Y < MAX_VEL
 }
