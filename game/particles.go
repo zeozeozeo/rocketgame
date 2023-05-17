@@ -23,8 +23,14 @@ type Particle struct {
 	life   float64
 }
 
+type Explosion struct {
+	nextFrameTime float64
+	frame         int
+}
+
 type ParticleManager struct {
-	particles []*Particle
+	particles  []*Particle
+	explosions []*Explosion
 }
 
 func NewParticleManager() *ParticleManager {
@@ -33,6 +39,10 @@ func NewParticleManager() *ParticleManager {
 
 func (pm *ParticleManager) Spawn(pos Vec2, size Vec2, vel Vec2, rotVel float64, clr color.RGBA, lifetime float64) {
 	pm.particles = append(pm.particles, &Particle{pos, size, vel, rotVel, 0.0, clr, lifetime})
+}
+
+func (pm *ParticleManager) SpawnExplosion(pos Vec2) {
+	pm.explosions = append(pm.explosions, &Explosion{nextFrameTime: 0.1})
 }
 
 func (pm *ParticleManager) Update(dt float64) {
@@ -46,6 +56,13 @@ func (pm *ParticleManager) Update(dt float64) {
 		p.pos.X += p.vel.X
 		p.pos.Y += p.vel.Y
 		p.rot += p.rotVel
+	}
+	for i := 0; i < len(pm.explosions); i++ {
+		exp := pm.explosions[i]
+		exp.nextFrameTime -= dt
+		if exp.nextFrameTime <= 0.0 {
+			exp.frame++
+		}
 	}
 }
 
