@@ -1,10 +1,12 @@
 package game
 
 import (
+	"fmt"
 	"image/color"
 	_ "image/png"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Block uint8
@@ -20,12 +22,17 @@ type Level struct {
 	lastRocketTime float64
 	player         *Player // player
 	rockets        []*Rocket
+	lastScoreTime  float64
+	score          int
+	pm             *ParticleManager
 }
 
 func NewLevel() *Level {
 	return &Level{
 		cam:    NewCamera(),
 		player: NewPlayer(),
+		pm:     NewParticleManager(),
+		score:  1,
 	}
 }
 
@@ -45,18 +52,48 @@ func (level *Level) Update(dt float64) {
 		level.AddRocket()
 		level.lastRocketTime = level.time
 	}
+	if level.time-level.lastScoreTime > 0.2 {
+		level.score++
+		level.lastScoreTime = level.time
+	}
 
-	for _, r := range level.rockets {
-		r.Update(level.cam, level.player, dt)
+	// get camera bounds
+	bounds := level.cam.GetBounds()
+
+	for i, r := range level.rockets {
+		r.Update(level.cam, level.player, dt, bounds)
+		if r.IsDead {
+			level.rockets = append(level.rockets[:i], level.rockets[i+1:]...)
+		}
 	}
 }
 
 func (level *Level) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{163, 222, 247, 255})
 
+	level.player.Draw(screen, level.cam)
 	for _, r := range level.rockets {
 		r.Draw(screen, level.cam)
 	}
 
-	level.player.Draw(screen, level.cam)
+	// draw score
+	scoreText := fmt.Sprintf("%d", level.score)
+	sx, _ := ebiten.WindowSize()
+	tw, ty := MeasureText(scoreText)
+	DrawTextShadow(screen, scoreText, sx/2-tw/2, 24+ty, color.RGBA{255, 255, 255, 255})
+
+	ebitenutil.DebugPrint(
+		screen,
+		fmt.Sprintf(
+			"fps: %f\ntps: %f\n%d rockets\nscore: %d",
+			ebiten.ActualFPS(),
+			ebiten.ActualTPS(),
+			len(level.rockets),
+			level.score,
+		),
+	)
+}
+
+func (level *Level) IsDone() bool {
+	return level.player.IsDead()
 }

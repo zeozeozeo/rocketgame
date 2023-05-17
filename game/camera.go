@@ -37,6 +37,18 @@ func (cam *Camera) ScreenToWorld(x, y float64) Vec2 {
 	}
 }
 
+func (cam *Camera) GetBounds() Rect {
+	sx, sy := ebiten.WindowSize()
+	start := cam.ScreenToWorld(0, 0)
+	end := cam.ScreenToWorld(float64(sx), float64(sy))
+	return Rect{
+		start.X,
+		start.Y,
+		end.X - start.X,
+		end.Y - start.Y,
+	}
+}
+
 func (cam *Camera) ApplyOP(op *ebiten.DrawImageOptions) *ebiten.DrawImageOptions {
 	wx, wy := ebiten.WindowSize()
 	div := cam.Zoom * 2

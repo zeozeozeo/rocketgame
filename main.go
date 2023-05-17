@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/zeozeozeo/rocketgame/game"
 )
 
@@ -17,13 +15,17 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	// restart game if the level is done
+	if g.level.IsDone() {
+		g.level = game.NewLevel()
+	}
+
 	g.level.Update(1.0 / TPS)
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.level.Draw(screen)
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("fps: %f\ntps: %f", ebiten.ActualFPS(), ebiten.ActualTPS()))
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

@@ -25,6 +25,7 @@ type Player struct {
 	targetAngle float64
 	aliveTime   float64
 	vel         Vec2 // player velocity
+	isDead      bool
 }
 
 func NewPlayer() *Player {
@@ -69,4 +70,17 @@ func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
 			screen.DrawImage(planeAnim[animNum], op)
 		}
 	}
+}
+
+func (player *Player) GetRect() Rect {
+	width, height := float64(playerSize.X)/2, float64(playerSize.Y)/2
+	return Rect{player.pos.X + width/2, player.pos.Y + height/2, width, height}
+}
+
+func (player *Player) Die() {
+	player.isDead = true
+}
+
+func (player *Player) IsDead() bool {
+	return player.isDead
 }

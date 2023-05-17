@@ -22,6 +22,8 @@ type Rocket struct {
 	vel               Vec2
 	aliveTime         float64
 	deathAnimProgress float64
+	IsDead            bool
+	didEnterBounds    bool
 }
 
 func NewRocket(x, y float64) *Rocket {
@@ -34,7 +36,7 @@ func NewRocket(x, y float64) *Rocket {
 	}
 }
 
-func (r *Rocket) Update(cam *Camera, player *Player, dt float64) {
+func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect) {
 	r.aliveTime += dt
 	if r.aliveTime > DEATH_ANIM_START {
 		r.deathAnimProgress = Lerp(DEATH_ANIM_START, DEATH_TIME, r.deathAnimProgress)
@@ -47,6 +49,22 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64) {
 	r.targetAngle = RotateTowards(r.pos, player.pos.Add(r.playerOffset))
 	r.angle = LerpAngle(r.angle, r.targetAngle, 0.01)
 	MoveTowards(&r.pos, r.angle, r.vel)
+
+	// check for collisions
+	bounds.W += float64(rocketSize.X)
+	bounds.H += float64(rocketSize.Y)
+	rocketRect := r.GetRect()
+	overlaps := bounds.Overlaps(rocketRect)
+
+	if !overlaps && r.didEnterBounds {
+		r.IsDead = true
+	} else if overlaps {
+		r.didEnterBounds = true
+	}
+
+	if rocketRect.Overlaps(player.GetRect()) {
+		player.Die()
+	}
 }
 
 func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
@@ -61,4 +79,8 @@ func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
 	} else {
 		screen.DrawImage(rocketIdle, op)
 	}
+}
+
+func (r *Rocket) GetRect() Rect {
+	return Rect{r.pos.X, r.pos.Y, float64(rocketSize.X), float64(rocketSize.Y)}
 }

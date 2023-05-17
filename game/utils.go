@@ -3,6 +3,7 @@ package game
 import (
 	"bytes"
 	"image"
+	"image/color"
 	"image/draw"
 	_ "image/png"
 	"io"
@@ -10,6 +11,8 @@ import (
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"github.com/zeozeozeo/rocketgame/game/assets"
 )
 
 func LoadRGBAImage(f io.Reader) (*image.RGBA, error) {
@@ -68,4 +71,24 @@ func ClampFloat64(v, min, max float64) float64 {
 		return max
 	}
 	return v
+}
+
+func DrawText(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
+	if !assets.FontLoaded {
+		assets.LoadFont()
+	}
+	text.Draw(screen, str, assets.FutilePro, x, y, clr)
+}
+
+func MeasureText(str string) (int, int) {
+	if !assets.FontLoaded {
+		assets.LoadFont()
+	}
+	rect := text.BoundString(assets.FutilePro, str)
+	return rect.Dx(), rect.Dy()
+}
+
+func DrawTextShadow(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
+	DrawText(screen, str, x+2, y+2, color.RGBA{0, 0, 0, 255})
+	DrawText(screen, str, x, y, clr)
 }
