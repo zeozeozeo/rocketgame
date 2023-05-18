@@ -12,6 +12,7 @@ import (
 
 const (
 	MAX_ROCKETS = 5
+	DEBUG       = false
 )
 
 var cloudTex = LoadEbitenImage(assets.Cloud)
@@ -147,16 +148,18 @@ func (level *Level) Draw(screen *ebiten.Image) {
 	tw, ty := MeasureText(scoreText)
 	DrawTextShadow(screen, scoreText, sx/2-tw/2, 24+ty, color.RGBA{255, 255, 255, 255})
 
-	ebitenutil.DebugPrint(
-		screen,
-		fmt.Sprintf(
-			"fps: %f\ntps: %f\n%d rockets\nscore: %d",
-			ebiten.ActualFPS(),
-			ebiten.ActualTPS(),
-			len(level.rockets),
-			level.score,
-		),
-	)
+	if DEBUG {
+		ebitenutil.DebugPrint(
+			screen,
+			fmt.Sprintf(
+				"fps: %f\ntps: %f\n%d rockets\nscore: %d",
+				ebiten.ActualFPS(),
+				ebiten.ActualTPS(),
+				len(level.rockets),
+				level.score,
+			),
+		)
+	}
 }
 
 func (level *Level) IsDone() bool {
