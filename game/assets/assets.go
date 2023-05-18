@@ -40,6 +40,9 @@ var ExplosionSound []byte
 //go:embed respawn.wav
 var RespawnSound []byte
 
+//go:embed zoom.wav
+var Zoom []byte
+
 var FontLoaded bool
 var FutilePro font.Face
 var FutileProSmall font.Face

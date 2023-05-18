@@ -63,6 +63,7 @@ func (level *Level) Update(dt float64) {
 	// camera zoom
 	cam := level.cam
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		NewSound(assets.Zoom).SetVolume(0.1).Play()
 		level.isZooming = !level.isZooming
 	}
 	if level.isZooming && cam.Zoom > 2.0 {
