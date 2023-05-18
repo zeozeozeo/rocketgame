@@ -37,16 +37,18 @@ type Level struct {
 	clouds         []*Cloud
 	lastScoreTime  float64
 	lastCloudTime  float64
-	score          int
+	Score          int
+	bestScore      int
 	pm             *ParticleManager
 }
 
-func NewLevel() *Level {
+func NewLevel(bestScore int) *Level {
 	return &Level{
-		cam:    NewCamera(),
-		player: NewPlayer(),
-		pm:     NewParticleManager(),
-		score:  1,
+		cam:       NewCamera(),
+		player:    NewPlayer(),
+		pm:        NewParticleManager(),
+		Score:     1,
+		bestScore: bestScore,
 	}
 }
 
@@ -65,7 +67,7 @@ func (level *Level) Update(dt float64) {
 		level.lastRocketTime = level.time
 	}
 	if level.time-level.lastScoreTime > 0.2 {
-		level.score++
+		level.Score++
 		level.lastScoreTime = level.time
 	}
 
@@ -144,9 +146,16 @@ func (level *Level) Draw(screen *ebiten.Image) {
 
 	// draw score
 	sx, _ := ebiten.WindowSize()
-	scoreText := fmt.Sprintf("%d", level.score)
-	tw, ty := MeasureText(scoreText)
-	DrawTextShadow(screen, scoreText, sx/2-tw/2, 24+ty, color.RGBA{255, 255, 255, 255})
+	scoreText := fmt.Sprintf("%d", level.Score)
+	tw, ty := MeasureText(scoreText, false)
+	DrawTextShadow(screen, scoreText, sx/2-tw/2, 24+ty, color.RGBA{255, 255, 255, 255}, false)
+
+	// draw best score
+	if level.bestScore != 0 {
+		scoreText = fmt.Sprintf("%d", level.bestScore)
+		tw, ty = MeasureText(scoreText, true)
+		DrawTextShadow(screen, scoreText, sx/2-tw/2, 40+ty*2, color.RGBA{255, 255, 255, 255}, true)
+	}
 
 	if DEBUG {
 		ebitenutil.DebugPrint(
@@ -156,7 +165,7 @@ func (level *Level) Draw(screen *ebiten.Image) {
 				ebiten.ActualFPS(),
 				ebiten.ActualTPS(),
 				len(level.rockets),
-				level.score,
+				level.Score,
 			),
 		)
 	}

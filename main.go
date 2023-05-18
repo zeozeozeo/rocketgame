@@ -11,13 +11,19 @@ const WIDTH, HEIGHT = 1280, 720
 const TPS = 144
 
 type Game struct {
-	level *game.Level
+	level     *game.Level
+	bestScore int
 }
 
 func (g *Game) Update() error {
 	// restart game if the level is done
 	if g.level.IsDone() {
-		g.level = game.NewLevel()
+		score := g.level.Score
+		if score > g.bestScore {
+			g.bestScore = score
+		}
+
+		g.level = game.NewLevel(g.bestScore)
 		g.level.PlayRespawnSound()
 	}
 
@@ -39,7 +45,7 @@ func main() {
 	ebiten.SetWindowTitle("rocketgame")
 
 	g := &Game{}
-	g.level = game.NewLevel()
+	g.level = game.NewLevel(0)
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

@@ -77,24 +77,35 @@ func Normalize(value, max, min float64) float64 {
 	return (value - min) / (max - min)
 }
 
-func DrawText(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
+func DrawText(screen *ebiten.Image, str string, x, y int, clr color.RGBA, small bool) {
 	if !assets.FontLoaded {
 		assets.LoadFont()
 	}
-	text.Draw(screen, str, assets.FutilePro, x, y, clr)
+	if small {
+		text.Draw(screen, str, assets.FutileProSmall, x, y, clr)
+	} else {
+		text.Draw(screen, str, assets.FutilePro, x, y, clr)
+	}
 }
 
-func MeasureText(str string) (int, int) {
+func MeasureText(str string, small bool) (int, int) {
 	if !assets.FontLoaded {
 		assets.LoadFont()
 	}
-	rect := text.BoundString(assets.FutilePro, str)
+
+	var rect image.Rectangle
+	if small {
+		rect = text.BoundString(assets.FutileProSmall, str)
+	} else {
+		rect = text.BoundString(assets.FutilePro, str)
+	}
+
 	return rect.Dx(), rect.Dy()
 }
 
-func DrawTextShadow(screen *ebiten.Image, str string, x, y int, clr color.RGBA) {
-	DrawText(screen, str, x+2, y+2, color.RGBA{0, 0, 0, 255})
-	DrawText(screen, str, x, y, clr)
+func DrawTextShadow(screen *ebiten.Image, str string, x, y int, clr color.RGBA, small bool) {
+	DrawText(screen, str, x+2, y+2, color.RGBA{0, 0, 0, 255}, small)
+	DrawText(screen, str, x, y, clr, small)
 }
 
 var fireColors = []color.RGBA{

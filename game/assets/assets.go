@@ -43,12 +43,14 @@ var RespawnSound []byte
 
 var FontLoaded bool
 var FutilePro font.Face
+var FutileProSmall font.Face
 
 func LoadFont() {
 	tt, err := opentype.Parse(futileProFont)
 	if err != nil {
 		panic(err)
 	}
+
 	const dpi = 72
 	FutilePro, err = opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    32,
@@ -58,6 +60,16 @@ func LoadFont() {
 	if err != nil {
 		panic(err)
 	}
+
+	FutileProSmall, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    16,
+		DPI:     dpi,
+		Hinting: font.HintingVertical,
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	FontLoaded = true
 	fmt.Println("loaded font")
 }
