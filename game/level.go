@@ -10,11 +10,8 @@ import (
 	"github.com/zeozeozeo/rocketgame/game/assets"
 )
 
-type Block uint8
-
 const (
-	BLOCK_AIR   Block = iota
-	BLOCK_SOLID Block = iota
+	MAX_ROCKETS = 5
 )
 
 var cloudTex = LoadEbitenImage(assets.Cloud)
@@ -62,7 +59,7 @@ func (level *Level) Update(dt float64) {
 	level.player.Update(dt, level.cam, level.pm)
 	level.cam.Zoom = 5.0
 
-	if level.time-level.lastRocketTime > RandFloat64(1.0, 3.0) && len(level.rockets) < 5 {
+	if level.time-level.lastRocketTime > RandFloat64(1.0, 3.0) && len(level.rockets) < MAX_ROCKETS {
 		level.AddRocket()
 		level.lastRocketTime = level.time
 	}
@@ -85,7 +82,7 @@ func (level *Level) Update(dt float64) {
 	level.pm.Update(dt)
 
 	// spawn random cloud
-	if level.time-level.lastCloudTime > 0.5 {
+	if level.time-level.lastCloudTime > 0.35 {
 		level.SpawnCloud(bounds)
 	}
 
@@ -106,7 +103,7 @@ func (level *Level) Update(dt float64) {
 }
 
 func (level *Level) SpawnCloud(bounds Rect) {
-	cloudPos := bounds.SpawnRandomSide(float64(cloudSize.X), float64(cloudSize.Y))
+	cloudPos := bounds.SpawnRandomSide(float64(cloudSize.X), float64(cloudSize.Y), true)
 
 	cloud := &Cloud{cloudPos, false}
 	// make sure this cloud doesn't overlap any other clouds
@@ -164,4 +161,8 @@ func (level *Level) Draw(screen *ebiten.Image) {
 
 func (level *Level) IsDone() bool {
 	return level.player.IsDead()
+}
+
+func (level *Level) PlayRespawnSound() {
+	level.player.PlayRespawnSound()
 }

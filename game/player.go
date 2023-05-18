@@ -22,23 +22,34 @@ const (
 )
 
 type Player struct {
-	pos          Vec2
-	angle        float64
-	targetAngle  float64
-	aliveTime    float64
-	vel          Vec2 // player velocity
-	isDead       bool
-	trail        [256]Line
-	curTrail     int
-	prevTrailPos Vec2
-	frame        uint64
+	pos             Vec2
+	angle           float64
+	targetAngle     float64
+	aliveTime       float64
+	vel             Vec2 // player velocity
+	isDead          bool
+	trail           [256]Line
+	curTrail        int
+	prevTrailPos    Vec2
+	frame           uint64
+	deathAnimActive bool
+	deathAnimTimer  float64
 }
 
 func NewPlayer() *Player {
-	return &Player{}
+	return &Player{deathAnimTimer: EXPLOSION_ANIM_LENGTH}
 }
 
 func (player *Player) Update(dt float64, cam *Camera, pm *ParticleManager) {
+	if player.deathAnimTimer <= 0 {
+		player.isDead = true
+		return
+	}
+	if player.deathAnimActive {
+		player.deathAnimTimer -= dt
+		return
+	}
+
 	player.frame++
 	player.aliveTime += dt
 	if player.aliveTime < 0.6 {
@@ -69,6 +80,10 @@ func (player *Player) Update(dt float64, cam *Camera, pm *ParticleManager) {
 }
 
 func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
+	if player.deathAnimActive {
+		return
+	}
+
 	// draw trail
 	for i := 0; i < len(player.trail); i++ {
 		if i%3 != 0 {
@@ -118,10 +133,21 @@ func (player *Player) GetRect() Rect {
 	return Rect{player.pos.X + width/2, player.pos.Y + height/2, width, height}
 }
 
-func (player *Player) Die() {
-	// player.isDead = true
+func (player *Player) Die(pm *ParticleManager) {
+	if player.deathAnimActive {
+		return
+	}
+
+	NewSound(assets.ExplosionSound).SetVolume(0.06).Play()
+
+	pm.SpawnExplosion(player.pos)
+	player.deathAnimActive = true
 }
 
 func (player *Player) IsDead() bool {
 	return player.isDead
+}
+
+func (player *Player) PlayRespawnSound() {
+	NewSound(assets.RespawnSound).SetVolume(0.3).Play()
 }

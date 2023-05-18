@@ -1,6 +1,7 @@
 package game
 
 import (
+	"image"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -10,8 +11,15 @@ import (
 
 var particleTex = LoadEbitenImage(assets.Particle)
 var particleSize = Vec2i{particleTex.Bounds().Dx(), particleTex.Bounds().Dy()}
+var explosionTex = LoadEbitenImage(assets.Explosion)
 
-const DECAY_TIME = 0.2
+const (
+	DECAY_TIME            = 0.2
+	EXPLOSION_FRAME_TIME  = 0.03
+	EXPLOSION_FRAMES      = 17
+	EXPLOSION_SIZE        = 192
+	EXPLOSION_ANIM_LENGTH = (EXPLOSION_FRAMES + 4) * EXPLOSION_FRAME_TIME
+)
 
 type Particle struct {
 	pos    Vec2
@@ -24,6 +32,7 @@ type Particle struct {
 }
 
 type Explosion struct {
+	pos           Vec2
 	nextFrameTime float64
 	frame         int
 }
@@ -42,7 +51,7 @@ func (pm *ParticleManager) Spawn(pos Vec2, size Vec2, vel Vec2, rotVel float64, 
 }
 
 func (pm *ParticleManager) SpawnExplosion(pos Vec2) {
-	pm.explosions = append(pm.explosions, &Explosion{nextFrameTime: 0.1})
+	pm.explosions = append(pm.explosions, &Explosion{pos: pos, nextFrameTime: EXPLOSION_FRAME_TIME})
 }
 
 func (pm *ParticleManager) Update(dt float64) {
@@ -57,11 +66,20 @@ func (pm *ParticleManager) Update(dt float64) {
 		p.pos.Y += p.vel.Y
 		p.rot += p.rotVel
 	}
+
 	for i := 0; i < len(pm.explosions); i++ {
 		exp := pm.explosions[i]
+
+		if exp.frame >= EXPLOSION_FRAMES {
+			pm.explosions = append(pm.explosions[:i], pm.explosions[i+1:]...)
+			i--
+			continue
+		}
+
 		exp.nextFrameTime -= dt
 		if exp.nextFrameTime <= 0.0 {
 			exp.frame++
+			exp.nextFrameTime = EXPLOSION_FRAME_TIME
 		}
 	}
 }
@@ -85,5 +103,21 @@ func (pm *ParticleManager) Draw(screen *ebiten.Image, cam *Camera) {
 		op.GeoM.Translate(p.pos.X, p.pos.Y)
 		cam.ApplyOPColorM(op)
 		colorm.DrawImage(screen, particleTex, cm, op)
+	}
+	for _, exp := range pm.explosions {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(-float64(EXPLOSION_SIZE)/2, -float64(EXPLOSION_SIZE)/2)
+		op.GeoM.Scale(0.2, 0.2)
+		op.GeoM.Translate(exp.pos.X, exp.pos.Y)
+		cam.ApplyOP(op)
+
+		frame := exp.frame
+		tex := explosionTex.SubImage(image.Rect(
+			EXPLOSION_SIZE*frame,
+			0,
+			EXPLOSION_SIZE*(frame+1),
+			EXPLOSION_SIZE,
+		)).(*ebiten.Image)
+		screen.DrawImage(tex, op)
 	}
 }

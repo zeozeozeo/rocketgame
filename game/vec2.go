@@ -32,8 +32,11 @@ func (r1 Rect) Overlaps(r2 Rect) bool {
 	return r1.X < r2.X+r2.W && r1.X+r1.W > r2.X && r1.Y < r2.Y+r2.H && r1.Y+r1.H > r2.Y
 }
 
-func (r Rect) SpawnRandomSide(w, h float64) Vec2 {
+func (r Rect) SpawnRandomSide(w, h float64, spawnOnEdge bool) Vec2 {
 	v := rand.Intn(6)
+	for !spawnOnEdge && (v == 1 || v == 4) {
+		v = rand.Intn(6)
+	}
 	//      1
 	// 0 =-----= 2
 	//   -     -

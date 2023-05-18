@@ -9,10 +9,12 @@ var rocketIdle = LoadEbitenImage(assets.RocketIdle)
 var rocketFire = LoadEbitenImage(assets.RocketFire)
 var rocketSize = Vec2i{rocketIdle.Bounds().Dx(), rocketIdle.Bounds().Dy()}
 
-const MAX_OFFSET = 150.0
-const MAX_VEL = 1.5
-const DEATH_ANIM_START = 5.0
-const DEATH_TIME = 7.0
+const (
+	MAX_OFFSET       = 150.0
+	MAX_VEL          = 1.5
+	DEATH_ANIM_START = 5.0
+	DEATH_TIME       = 7.0
+)
 
 type Rocket struct {
 	pos               Vec2
@@ -34,7 +36,7 @@ func NewRocket(cam *Camera) *Rocket {
 			RandFloat64(-MAX_OFFSET, MAX_OFFSET),
 			RandFloat64(-MAX_OFFSET, MAX_OFFSET),
 		},
-		pos: bounds.SpawnRandomSide(float64(rocketSize.X), float64(rocketSize.Y)),
+		pos: bounds.SpawnRandomSide(float64(rocketSize.X), float64(rocketSize.Y), false),
 	}
 }
 
@@ -65,7 +67,7 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect, pm
 	}
 
 	if rocketRect.Overlaps(player.GetRect()) {
-		player.Die()
+		player.Die(pm)
 	}
 
 	// spawn particles

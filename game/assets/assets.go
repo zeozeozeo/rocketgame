@@ -32,6 +32,15 @@ var Particle []byte
 //go:embed cloud.png
 var Cloud []byte
 
+//go:embed explosion.png
+var Explosion []byte
+
+//go:embed explosion.wav
+var ExplosionSound []byte
+
+//go:embed respawn.wav
+var RespawnSound []byte
+
 var FontLoaded bool
 var FutilePro font.Face
 

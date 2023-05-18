@@ -18,6 +18,7 @@ func (g *Game) Update() error {
 	// restart game if the level is done
 	if g.level.IsDone() {
 		g.level = game.NewLevel()
+		g.level.PlayRespawnSound()
 	}
 
 	g.level.Update(1.0 / TPS)
