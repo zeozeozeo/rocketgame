@@ -104,7 +104,13 @@ func MeasureText(str string, small bool) (int, int) {
 }
 
 func DrawTextShadow(screen *ebiten.Image, str string, x, y int, clr color.RGBA, small bool) {
-	DrawText(screen, str, x+2, y+2, color.RGBA{0, 0, 0, 255}, small)
+	var offset int
+	if small {
+		offset = 1
+	} else {
+		offset = 2
+	}
+	DrawText(screen, str, x+offset, y+offset, color.RGBA{0, 0, 0, 255}, small)
 	DrawText(screen, str, x, y, clr, small)
 }
 

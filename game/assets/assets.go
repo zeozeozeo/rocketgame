@@ -2,7 +2,6 @@ package assets
 
 import (
 	_ "embed"
-	"fmt"
 
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -71,5 +70,4 @@ func LoadFont() {
 	}
 
 	FontLoaded = true
-	fmt.Println("loaded font")
 }

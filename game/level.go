@@ -7,6 +7,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/zeozeozeo/rocketgame/game/assets"
 )
 
@@ -40,11 +41,12 @@ type Level struct {
 	Score          int
 	bestScore      int
 	pm             *ParticleManager
+	isZooming      bool
 }
 
 func NewLevel(bestScore int) *Level {
 	return &Level{
-		cam:       NewCamera(),
+		cam:       NewCamera().SetZoom(5.0),
 		player:    NewPlayer(),
 		pm:        NewParticleManager(),
 		Score:     1,
@@ -57,10 +59,26 @@ func (level *Level) AddRocket() {
 }
 
 func (level *Level) Update(dt float64) {
-	level.prevCamPos = Vec2{level.cam.X, level.cam.Y}
+	// level.player.Die(level.cam, level.pm)
+	// camera zoom
+	cam := level.cam
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		level.isZooming = !level.isZooming
+	}
+	if level.isZooming && cam.Zoom > 2.0 {
+		cam.Zoom -= 0.1
+	}
+	if !level.isZooming && cam.Zoom < 5.0 {
+		cam.Zoom += 0.1
+	}
+	if cam.Zoom > 5.0 {
+		cam.Zoom = 5.0
+	}
+	level.cam.Update(dt)
+
+	level.prevCamPos = Vec2{cam.X, cam.Y}
 	level.time += dt
-	level.player.Update(dt, level.cam, level.pm)
-	level.cam.Zoom = 5.0
+	level.player.Update(dt, cam, level.pm)
 
 	if level.time-level.lastRocketTime > RandFloat64(1.0, 3.0) && len(level.rockets) < MAX_ROCKETS {
 		level.AddRocket()
@@ -72,11 +90,11 @@ func (level *Level) Update(dt float64) {
 	}
 
 	// get camera bounds
-	bounds := level.cam.GetBounds()
+	bounds := cam.GetBounds()
 
 	for i := 0; i < len(level.rockets); i++ {
 		r := level.rockets[i]
-		r.Update(level.cam, level.player, dt, bounds, level.pm)
+		r.Update(cam, level.player, dt, bounds, level.pm)
 		if r.IsDead {
 			level.rockets = append(level.rockets[:i], level.rockets[i+1:]...)
 			i--

@@ -102,7 +102,7 @@ func (player *Player) Draw(screen *ebiten.Image, cam *Camera) {
 			float32(endW.Y),
 			float32(cam.Zoom),
 			color.RGBA{255, 255, 255, 255},
-			true,
+			false,
 		)
 	}
 
@@ -133,13 +133,13 @@ func (player *Player) GetRect() Rect {
 	return Rect{player.pos.X + width/2, player.pos.Y + height/2, width, height}
 }
 
-func (player *Player) Die(pm *ParticleManager) {
+func (player *Player) Die(cam *Camera, pm *ParticleManager) {
 	if player.deathAnimActive {
 		return
 	}
-
 	NewSound(assets.ExplosionSound).SetVolume(0.06).Play()
 
+	cam.Shake(EXPLOSION_ANIM_LENGTH)
 	pm.SpawnExplosion(player.pos)
 	player.deathAnimActive = true
 }
@@ -149,5 +149,5 @@ func (player *Player) IsDead() bool {
 }
 
 func (player *Player) PlayRespawnSound() {
-	NewSound(assets.RespawnSound).SetVolume(0.3).Play()
+	NewSound(assets.RespawnSound).SetVolume(0.1).Play()
 }

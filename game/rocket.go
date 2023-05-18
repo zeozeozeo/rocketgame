@@ -45,8 +45,8 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect, pm
 	if r.aliveTime > DEATH_ANIM_START {
 		r.deathAnimProgress = Lerp(DEATH_ANIM_START, DEATH_TIME, r.deathAnimProgress)
 	}
-	r.vel.X += 0.005
-	r.vel.Y += 0.005
+	r.vel.X += 0.004
+	r.vel.Y += 0.004
 	r.vel = r.vel.ClampMax(MAX_VEL)
 
 	// move towards player
@@ -67,7 +67,7 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect, pm
 	}
 
 	if rocketRect.Overlaps(player.GetRect()) {
-		player.Die(pm)
+		player.Die(cam, pm)
 	}
 
 	// spawn particles
