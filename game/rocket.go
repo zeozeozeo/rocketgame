@@ -71,21 +71,22 @@ func (r *Rocket) Update(cam *Camera, player *Player, dt float64, bounds Rect, pm
 	}
 
 	// spawn particles
-	if r.IsActive() && r.aliveTime-r.lastParticleTime > 0.01 {
-		const maxVel = 0.05
-		for i := 0; i < 2; i++ {
-			pm.Spawn(
-				r.pos.Add(Vec2{RandFloat64(-1.0, 1.0), RandFloat64(-1.0, 1.0)}),
-				Vec2{RandFloat64(0.3, 0.6), RandFloat64(0.3, 0.6)},
-				Vec2{RandFloat64(-maxVel, maxVel), RandFloat64(-maxVel, maxVel)},
-				0.1,
-				RandomFireColor(),
-				RandFloat64(0.1, 0.5),
-			)
+	/*
+		if r.IsActive() && r.aliveTime-r.lastParticleTime > 0.01 {
+			const maxVel = 0.05
+			for i := 0; i < 2; i++ {
+				pm.Spawn(
+					r.pos.Add(Vec2{RandFloat64(-1.0, 1.0), RandFloat64(-1.0, 1.0)}),
+					Vec2{RandFloat64(0.3, 0.6), RandFloat64(0.3, 0.6)},
+					Vec2{RandFloat64(-maxVel, maxVel), RandFloat64(-maxVel, maxVel)},
+					0.1,
+					RandomFireColor(),
+					RandFloat64(0.1, 0.5),
+				)
+			}
+			r.lastParticleTime = r.aliveTime
 		}
-		r.lastParticleTime = r.aliveTime
-	}
-
+	*/
 }
 
 func (r *Rocket) Draw(screen *ebiten.Image, cam *Camera) {
